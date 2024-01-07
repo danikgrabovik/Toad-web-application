@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Toad Detail</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Toad Detail</h1>
+    <p>Name: {{ toad.name }}</p>
+    <p>Money: {{ toad.money }}</p>
+    <p>Current Level: {{ toad.curr_level }}</p>
+    <p>Level Progress: {{ toad.level_progress }}</p>
+    <p>Health: {{ toad.health }}</p>
+
+    <form method="post" id="send-request-form">
+        
+        <input type="number" id="toad-id-input" name="toad_id" placeholder="Enter Toad ID" required>
+        <input type="submit" value="Send Request">
+      </form>
+      
+      <script>
+        document.getElementById('send-request-form').addEventListener('submit', function(event) {
+          event.preventDefault();
+          var form = this;
+          var toadId = document.getElementById('toad-id-input').value;
+          var toadId_from = window.location.pathname.split('/').filter(Boolean).pop();
+          if (toadId) {
+            var actionUrl = '/toad/send-request/'+ toadId+ "/" + toadId_from ;
+            form.action = actionUrl;
+            form.submit();
+          }
+        });
+      </script>
+
+
+      
+
+
+    <div id="result"></div>
+
+    <script>
+        $(document).ready(function() {
+            // Extract the toad_id from the URL
+            //var urlParams = new URLSearchParams(window.location.search);
+            var toadId = window.location.pathname.split('/').filter(Boolean).pop();
+            if (toadId) {
+                // Make AJAX request to the check_requests view
+                $.ajax({
+                    url: "/toad/check-requests/" + toadId + "/",
+                    method: "GET",
+                    success: function(data) {
+                         // Process the response data
+                         var resultDiv = $("#result");
+                         if (data.hasOwnProperty("error")) {
+                             resultDiv.text("Error: " + data.error);
+                         } else {
+                             var requestData = data;
+ 
+                             // Display the request information
+                             var html = "<h2>Request Information</h2>";
+                             html += "<ul>";
+ 
+                             // Iterate over each request in the data
+                             for (var i = 0; i < requestData.length; i++) {
+                                 html += "<li>Request from: " + requestData[i].request_from + "</li>";
+                                 html += "<li>Accepted: " + requestData[i].accepted + "</li>";
+                                 html += "<li>Ignore: " + requestData[i].ignore + "</li>";
+                                 html += "<br>";
+                             }
+ 
+                             html += "</ul>";
+ 
+                             resultDiv.html(html);
+                         }
+                     },
+                     error: function() {
+                         $("#result").text("Error: Failed to fetch data.");
+                     }
+                 });
+             } else {
+                 // Handle case when toad_id parameter is missing
+                 $("#result").text("Error: Missing toad_id parameter in the URL.");
+             }
+         });
+     </script>
+
+
+
+    <form method="post" id="accept-request-form">
+        
+      <input type="number" id="toad-id-input" name="toad_id" placeholder="Enter Toad ID" required>
+      <input type="submit" value="Accept Request">
+    </form>
+    
+    <script>
+      document.getElementById('accept-request-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+        var form = this;
+        var toadId = document.getElementById('toad-id-input').value;
+        var toadId_from = window.location.pathname.split('/').filter(Boolean).pop();
+        if (toadId) {
+          var actionUrl = '/toad/accept-request/'+ toadId+ "/" + toadId_from ;
+          form.action = actionUrl;
+          form.submit();
+        }
+      });
+    </script>
+
+
+</body>
+</html>
